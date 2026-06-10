@@ -37,7 +37,7 @@ The tool returns `synthesis contract + ranked evidence`; the *caller's* model do
 ## Run it
 
 ```bash
-cp .env.example .env   # fill in keys + AUTH_TOKENS + ADMIN_TOKEN
+cp .env.template .env   # fill in keys + AUTH_TOKENS + ADMIN_TOKEN
 docker compose up -d --build
 curl localhost:3030/healthz
 ```
@@ -80,4 +80,4 @@ const tools = await mcp.tools();
 
 ## Keys (`.env`)
 
-See `.env.example`. Minimum useful set: one reasoning key (`GOOGLE_API_KEY`), one web-search key (`BRAVE_API_KEY` or `PARALLEL_API_KEY`), `XAI_API_KEY` for X, `SCRAPECREATORS_API_KEY` for TikTok/Instagram. Reddit, Hacker News, Polymarket and GitHub work with no keys.
+See `.env.template`. Minimum useful set: one reasoning key (`GOOGLE_API_KEY`), one web-search key (`BRAVE_API_KEY` or `PARALLEL_API_KEY`), `XAI_API_KEY` for X, `SCRAPECREATORS_API_KEY` for TikTok/Instagram. Reddit, Hacker News, Polymarket and GitHub work with no keys.
