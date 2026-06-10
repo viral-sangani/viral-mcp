@@ -43,7 +43,13 @@ app.post("/admin/sync", (req, res) => {
 app.post("/mcp", async (req, res) => {
   if (tokens.length > 0) {
     const auth = req.headers.authorization ?? "";
-    const presented = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    // Bearer header (Claude Code, AI SDK) or ?key= query param (Claude
+    // Cowork / claude.ai custom connectors, which can't send custom headers).
+    const presented = auth.startsWith("Bearer ")
+      ? auth.slice(7)
+      : typeof req.query.key === "string"
+        ? req.query.key
+        : "";
     const entry = tokens.find(t => t.token === presented);
     if (!entry) {
       res.status(401).json({
