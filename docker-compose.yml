@@ -1,10 +1,16 @@
 services:
   viral-mcp:
     build: .
+    container_name: viral-mcp
     restart: unless-stopped
     ports:
-      - "3030:3030"
+      - "127.0.0.1:3030:3030" # local debugging via SSH tunnel only
     env_file:
       - .env
-    # Put a TLS-terminating reverse proxy (Caddy/nginx/Traefik) in front of
-    # this in production — bearer tokens must never travel over plain HTTP.
+    networks:
+      - signal-net # shared with signal-nginx, which terminates TLS for mcp.thefriday.xyz
+
+networks:
+  signal-net:
+    external: true
+    name: signal_signal-net
