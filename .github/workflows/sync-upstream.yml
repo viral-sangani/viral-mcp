@@ -1,0 +1,54 @@
+name: Sync upstream last30days-skill
+
+on:
+  schedule:
+    - cron: "17 5 * * *" # daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Bump submodule to upstream main
+        id: bump
+        run: |
+          git -C upstream fetch origin main
+          git -C upstream checkout origin/main
+          if git diff --quiet upstream; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify contract anchors still extract
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          grep -q '^# OUTPUT CONTRACT' upstream/skills/last30days/SKILL.md
+          grep -q '^End of OUTPUT CONTRACT\.' upstream/skills/last30days/SKILL.md
+
+      - name: Smoke-test engine against fixtures
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          python3 --version
+          python3 upstream/skills/last30days/scripts/last30days.py "smoke test" --mock --emit=context | head -5
+
+      - name: Commit and push
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          VERSION=$(jq -r .version upstream/.claude-plugin/plugin.json)
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add upstream
+          git commit -m "chore: sync upstream last30days-skill to v${VERSION}"
+          git push
+
+      # After this push, redeploy your server, or skip redeploys entirely by
+      # calling the running server's one-click sync:
+      #   curl -X POST https://your-host/admin/sync -H "Authorization: Bearer $ADMIN_TOKEN"
